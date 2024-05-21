@@ -4,7 +4,7 @@ class Game
   attr_accessor :guesses, :word, :errors
 
   def initialize(params = {})
-    @guesses = params.fetch(:guesses, nil)
+    @guesses = params.fetch(:guesses, "")
     @word = params.fetch(:word, nil)
     @errors = params.fetch(:errors, "0/8")
   end
@@ -72,17 +72,58 @@ class Game
   end
 
   def win_or_lose
-    return "lose" if errors.to_i == 1
+    return "lose" if errors.to_r.to_f == 1.0
     return "win" if to_hide(word, guesses) == word
-    false
   end
 
   def correct_or_incorrect(guess)
     word.include?(guess) ? "correct" : "incorrect"
   end
 
-  def new_game
+  def play
+    self.word = choose_word if word.nil?
+    display
 
+    until win_or_lose
+      guess =  make_guess
+      if guess == "!save"
+        terminate(guess)
+        break
+      end
+      if ('a'..'z').none?(guess)
+        puts "guess a letter"
+        next
+      end
+
+      self.guesses += guess
+      self.errors = (errors.split("/")[0].to_i + 1).to_s + "/8" if correct_or_incorrect(guess) == "incorrect"
+      display
+    end
+
+    terminate("win") if win_or_lose == "win"
+    terminate("lose") if win_or_lose == "lose"
   end
 
+end
+
+
+if File.exist?("save.yaml")
+  puts "Continue from saved file?(Y/n) "
+  confirmation = gets.chomp
+  if confirmation.downcase == "n"
+    puts "Starting a new game ... "
+    puts "** You can save the game by typing !save "
+    game = Game.new
+    game.play
+  elsif confirmation == "" || confirmation.downcase == "y"
+    puts "Loading the save file ... "
+    game = Game.load_game
+    game.play
+  else
+    puts "Abort"
+  end
+else
+  puts "** You can save the game by typing !save "
+  game = Game.new
+  game.play
 end
