@@ -35,4 +35,21 @@ class Game
     end
   end
 
+  def make_guess
+    puts "guess: "
+    gets.chomp.downcase
+  end
+
+  # this method hides the letters of a string by replacing them with underscores if they are not
+  # present in the exception string
+  def to_hide(string, exception)
+    hidden = ""
+    string.split("").each {|letter| exception.split("").include?(letter) ? hidden += letter : hidden += " _ "}
+    hidden
+  end
+
+  def display
+    puts "guesses: #{guesses} | word: #{to_hide(word, guesses)} | errors: #{errors}"
+  end
+
 end
