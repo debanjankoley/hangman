@@ -1,16 +1,10 @@
-# computer chooses a random word from the dictionary
-# player makes the guess
-# display for incorrect and correct guesses
-# game save and load functionality
-
 require 'yaml'
 
 class Game
-  attr_accessor :guesses, :display, :word, :errors
+  attr_accessor :guesses, :word, :errors
 
   def initialize(params = {})
     @guesses = params.fetch(:guesses, nil)
-    @display = params.fetch(:display, nil)
     @word = params.fetch(:word, nil)
     @errors = params.fetch(:errors, "0/8")
   end
@@ -18,7 +12,6 @@ class Game
   def to_yaml
     YAML.dump({
       :guesses => @guesses,
-      :display => @display,
       :word => @word,
       :errors => @errors
     })
@@ -60,6 +53,36 @@ class Game
 
   def display
     puts "guesses: #{guesses} | word: #{to_hide(word, guesses)} | errors: #{errors}"
+  end
+
+  def terminate(options)
+    case options
+    when "!save"
+      puts "saving game ... "
+      puts "game saved\n"
+      self.save_game
+    when "win"
+      puts "You win! Congratulations!\n"
+      File.delete("save.yaml") if File.exist?("save.yaml")
+    when "lose"
+      puts "The answer was #{word}"
+      puts "You lose!\n"
+      File.delete("save.yaml") if File.exist?("save.yaml")
+    end
+  end
+
+  def win_or_lose
+    return "lose" if errors.to_i == 1
+    return "win" if to_hide(word, guesses) == word
+    false
+  end
+
+  def correct_or_incorrect(guess)
+    word.include?(guess) ? "correct" : "incorrect"
+  end
+
+  def new_game
+
   end
 
 end
