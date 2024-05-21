@@ -12,7 +12,7 @@ class Game
     @guesses = params.fetch(:guesses, nil)
     @display = params.fetch(:display, nil)
     @word = params.fetch(:word, nil)
-    @errors = params.fetch(:errors, "0/7")
+    @errors = params.fetch(:errors, "0/8")
   end
 
   def to_yaml
@@ -27,6 +27,16 @@ class Game
   def self.from_yaml(string)
     data = YAML.load(string)
     self.new(data)
+  end
+
+  def save_game
+    File.open("save.yaml", "w") { |file| file.write(self.to_yaml) }
+  end
+
+  def self.load_game
+    File.open("save.yaml", "r") do |file|
+      self.from_yaml(file)
+    end
   end
 
   def choose_word
