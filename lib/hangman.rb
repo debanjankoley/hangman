@@ -29,4 +29,10 @@ class Game
     self.new(data)
   end
 
+  def choose_word
+    File.open("google-10000-english-no-swears.txt", "r") do |file|
+      self.word = file.readlines.select {|word| word.size > 6 && word.size < 13}.sample.chomp
+    end
+  end
+
 end
