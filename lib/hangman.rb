@@ -17,9 +17,9 @@ class Game
 
   def to_yaml
     YAML.dump({
-      :guesses => @guesses
-      :display => @display
-      :word => @word
+      :guesses => @guesses,
+      :display => @display,
+      :word => @word,
       :errors => @errors
     })
   end
