@@ -4,50 +4,50 @@ class Game
   attr_accessor :guesses, :word, :errors
 
   def initialize(params = {})
-    @guesses = params.fetch(:guesses, "")
+    @guesses = params.fetch(:guesses, '')
     @word = params.fetch(:word, nil)
-    @errors = params.fetch(:errors, "0/8")
+    @errors = params.fetch(:errors, '0/8')
   end
 
   def to_yaml
     YAML.dump({
-      :guesses => @guesses,
-      :word => @word,
-      :errors => @errors
-    })
+                guesses: @guesses,
+                word: @word,
+                errors: @errors
+              })
   end
 
   def self.from_yaml(string)
-    data = YAML.load(string)
-    self.new(data)
+    data = YAML.safe_load(string)
+    new(data)
   end
 
   def save_game
-    File.open("save.yaml", "w") { |file| file.write(self.to_yaml) }
+    File.open('save.yaml', 'w') { |file| file.write(to_yaml) }
   end
 
   def self.load_game
-    File.open("save.yaml", "r") do |file|
-      self.from_yaml(file)
+    File.open('save.yaml', 'r') do |file|
+      from_yaml(file)
     end
   end
 
   def choose_word
-    File.open("google-10000-english-no-swears.txt", "r") do |file|
-      self.word = file.readlines.select {|word| word.size > 6 && word.size < 13}.sample.chomp
+    File.open('google-10000-english-no-swears.txt', 'r') do |file|
+      self.word = file.readlines.select { |word| word.size > 6 && word.size < 13 }.sample.chomp
     end
   end
 
   def make_guess
-    puts "guess: "
+    puts 'guess: '
     gets.chomp.downcase
   end
 
   # this method hides the letters of a string by replacing them with underscores if they are not
   # present in the exception string
   def to_hide(string, exception)
-    hidden = ""
-    string.split("").each {|letter| exception.split("").include?(letter) ? hidden += letter : hidden += " _ "}
+    hidden = ''
+    string.split('').each { |letter| hidden += exception.split('').include?(letter) ? letter : ' _ ' }
     hidden
   end
 
@@ -57,27 +57,28 @@ class Game
 
   def terminate(options)
     case options
-    when "!save"
-      puts "saving game ... "
+    when '!save'
+      puts 'saving game ... '
       puts "game saved\n"
-      self.save_game
-    when "win"
+      save_game
+    when 'win'
       puts "You win! Congratulations!\n"
-      File.delete("save.yaml") if File.exist?("save.yaml")
-    when "lose"
+      File.delete('save.yaml') if File.exist?('save.yaml')
+    when 'lose'
       puts "The answer was #{word}"
       puts "You lose!\n"
-      File.delete("save.yaml") if File.exist?("save.yaml")
+      File.delete('save.yaml') if File.exist?('save.yaml')
     end
   end
 
   def win_or_lose
-    return "lose" if errors.to_r.to_f == 1.0
-    return "win" if to_hide(word, guesses) == word
+    return 'lose' if errors.to_r.to_i == 1
+
+    'win' if to_hide(word, guesses) == word
   end
 
   def correct_or_incorrect(guess)
-    word.include?(guess) ? "correct" : "incorrect"
+    word.include?(guess) ? 'correct' : 'incorrect'
   end
 
   def play
@@ -86,44 +87,42 @@ class Game
 
     until win_or_lose
       guess =  make_guess
-      if guess == "!save"
+      if guess == '!save'
         terminate(guess)
         break
       end
       if ('a'..'z').none?(guess)
-        puts "guess a letter"
+        puts 'guess a letter'
         next
       end
 
       self.guesses += guess
-      self.errors = (errors.split("/")[0].to_i + 1).to_s + "/8" if correct_or_incorrect(guess) == "incorrect"
+      self.errors = (errors.split('/')[0].to_i + 1).to_s + '/8' if correct_or_incorrect(guess) == 'incorrect'
       display
     end
 
-    terminate("win") if win_or_lose == "win"
-    terminate("lose") if win_or_lose == "lose"
+    terminate('win') if win_or_lose == 'win'
+    terminate('lose') if win_or_lose == 'lose'
   end
-
 end
 
-
-if File.exist?("save.yaml")
-  puts "Continue from saved file?(Y/n) "
+if File.exist?('save.yaml')
+  puts 'Continue from saved file?(Y/n) '
   confirmation = gets.chomp
-  if confirmation.downcase == "n"
-    puts "Starting a new game ... "
-    puts "** You can save the game by typing !save "
+  if confirmation.downcase == 'n'
+    puts 'Starting a new game ... '
+    puts '** You can save the game by typing !save '
     game = Game.new
     game.play
-  elsif confirmation == "" || confirmation.downcase == "y"
-    puts "Loading the save file ... "
+  elsif confirmation == '' || confirmation.downcase == 'y'
+    puts 'Loading the save file ... '
     game = Game.load_game
     game.play
   else
-    puts "Abort"
+    puts 'Abort'
   end
 else
-  puts "** You can save the game by typing !save "
+  puts '** You can save the game by typing !save '
   game = Game.new
   game.play
 end
